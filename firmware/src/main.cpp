@@ -1,21 +1,32 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
+// Pins definitions
+#define BUZZER_PIN 27
+
+// Beep by the integrated buzzer
+void beep(int frequency, int duration)
+{
+  tone(BUZZER_PIN, frequency, duration);
+}
+
+// Play startup sound
+void startupSound()
+{
+  beep(1000, 150);
+  delay(50);
+  beep(2000, 150);
+  delay(50);
+  beep(3000, 150);
+  delay(50);
+  beep(2000, 150);
+}
 
 void setup()
 {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  Serial.begin(115200);
+  startupSound();
 }
 
 void loop()
 {
-  // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y)
-{
-  return x + y;
 }
