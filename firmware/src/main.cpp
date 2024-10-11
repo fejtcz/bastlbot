@@ -8,6 +8,7 @@
 #define SDA_PIN 21
 #define SCL_PIN 22
 #define BUZZER_PIN 27
+#define VOLTAGE_PIN 34
 
 // Display definitions
 #define DISPLAY_ADDRESS 0x3C
@@ -53,12 +54,19 @@ void setup()
       ; // Don't proceed, loop forever
   }
 
+  // Voltage check
+  pinMode(VOLTAGE_PIN, INPUT);
+  float voltageValue = analogRead(VOLTAGE_PIN) * 3.3 / 4096;
+
   // Welcome message
   display.clearDisplay();
   display.setTextColor(WHITE);
   display.setTextSize(2);
   display.setCursor(20, 25);
   display.println("BastlBot");
+  display.setTextSize(1);
+  display.setCursor(10, 55);
+  display.println("Bat. voltage: " + String(voltageValue) + "V");
   display.display();
 
   // Startup sound
