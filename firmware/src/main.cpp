@@ -56,7 +56,7 @@ void setup()
 
   // Voltage check
   pinMode(VOLTAGE_PIN, INPUT);
-  float voltageValue = analogRead(VOLTAGE_PIN) * 3.3 / 4096;
+  float voltageValue = analogReadMilliVolts(VOLTAGE_PIN) * 1.5625 / 1000.0;
 
   // Welcome message
   display.clearDisplay();
