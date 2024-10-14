@@ -50,8 +50,7 @@ void setup()
   if (!display.begin(SSD1306_SWITCHCAPVCC, DISPLAY_ADDRESS))
   {
     Serial.println(F("Display allocation failed!"));
-    for (;;)
-      ; // Don't proceed, loop forever
+    return;
   }
 
   // Voltage check
