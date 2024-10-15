@@ -7,6 +7,7 @@
 #include <WiFiClient.h>
 #include <WebServer.h>
 #include <ESPmDNS.h>
+#include <Adafruit_MotorShield.h>
 
 // Pins definitions
 #define SDA_PIN 21
@@ -23,8 +24,15 @@ Adafruit_SSD1306 display(DISPLAY_WIDTH, DISPLAY_HEIGHT, &Wire, DISPLAY_RESET);
 
 // Define WiFi credentials and server PORT
 #define WIFI_SSID "SSID"
-#define WIFI_PASWORD "PASSWORD"
+#define WIFI_PASWORD "PASWORD"
 WebServer webserver(80);
+
+// Define motor shield and motors
+Adafruit_MotorShield motorShield = Adafruit_MotorShield(0x40);
+Adafruit_DCMotor *motor1 = motorShield.getMotor(1);
+Adafruit_DCMotor *motor2 = motorShield.getMotor(2);
+Adafruit_DCMotor *motor3 = motorShield.getMotor(3);
+Adafruit_DCMotor *motor4 = motorShield.getMotor(4);
 
 // Display icons
 // UP
@@ -43,6 +51,100 @@ const unsigned char leftIcon[] PROGMEM = {
 const unsigned char rightIcon[] PROGMEM = {
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xbf, 0xff, 0x9f, 0xff, 0x8f, 0xe0, 0x07, 0xc0, 0x03,
     0xc0, 0x03, 0xe0, 0x07, 0xff, 0x8f, 0xff, 0x9f, 0xff, 0xbf, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+
+// Movement functions
+// Move forward
+void moveForward()
+{
+  motor1->run(FORWARD);
+  motor1->setSpeed(100);
+  motor2->run(BACKWARD);
+  motor2->setSpeed(100);
+  motor3->run(BACKWARD);
+  motor3->setSpeed(100);
+  motor4->run(FORWARD);
+  motor4->setSpeed(100);
+}
+
+// Move backward
+void moveBackward()
+{
+  motor1->run(BACKWARD);
+  motor1->setSpeed(100);
+  motor2->run(FORWARD);
+  motor2->setSpeed(100);
+  motor3->run(FORWARD);
+  motor3->setSpeed(100);
+  motor4->run(BACKWARD);
+  motor4->setSpeed(100);
+}
+
+// Left turn
+void leftTurn()
+{
+  motor1->run(FORWARD);
+  motor1->setSpeed(100);
+  motor2->run(BACKWARD);
+  motor2->setSpeed(100);
+  motor3->run(FORWARD);
+  motor3->setSpeed(100);
+  motor4->run(BACKWARD);
+  motor4->setSpeed(100);
+}
+
+// Right turn
+void rightTurn()
+{
+  motor1->run(BACKWARD);
+  motor1->setSpeed(100);
+  motor2->run(FORWARD);
+  motor2->setSpeed(100);
+  motor3->run(BACKWARD);
+  motor3->setSpeed(100);
+  motor4->run(FORWARD);
+  motor4->setSpeed(100);
+}
+
+// Stop movement
+void stopMovement()
+{
+  motor1->run(RELEASE);
+  motor2->run(RELEASE);
+  motor3->run(RELEASE);
+  motor4->run(RELEASE);
+}
+
+// Forward step
+void forwardStep()
+{
+  moveForward();
+  delay(1000);
+  stopMovement();
+}
+
+// Backward step
+void backwardStep()
+{
+  moveBackward();
+  delay(1000);
+  stopMovement();
+}
+
+// Left step
+void leftStep()
+{
+  leftTurn();
+  delay(1200);
+  stopMovement();
+}
+
+// Right step
+void rightStep()
+{
+  rightTurn();
+  delay(1200);
+  stopMovement();
+}
 
 // List of step instructions, stored in an array
 int instructions[10];
@@ -146,6 +248,28 @@ void addInstruction(int instruction)
 }
 
 /*
+ * Function for running the instructions
+ */
+void runInstructions()
+{
+  for (int i = 0; i <= (instList - 1); i++)
+  {
+    switch (instructions[i])
+    {
+    case 1:
+      leftStep();
+      break;
+    case 2:
+      rightStep();
+      break;
+    case 3:
+      forwardStep();
+      break;
+    }
+  }
+}
+
+/*
  * Function for reseting the instructions
  */
 void clearInstructions()
@@ -209,6 +333,14 @@ void setup()
   display.println("(Stepper)");
   display.display();
 
+  // Motor shield initialization
+  if (!motorShield.begin())
+  {
+    Serial.println("Could not find Motor Shield!.");
+    while (1)
+      ;
+  }
+
   // WiFi connection
   WiFi.begin(WIFI_SSID, WIFI_PASWORD);
   while (WiFi.status() != WL_CONNECTED)
@@ -255,6 +387,13 @@ void setup()
                {
                   clearInstructions();
                   Serial.println("CLEAR");
+                  redirectToHome(); });
+
+  webserver.on("/run", []()
+               {
+                  runInstructions();
+                  Serial.println("RUN");
+                  clearInstructions();
                   redirectToHome(); });
 
   // Webserver start
