@@ -58,11 +58,15 @@ void setup()
   float voltageValue = analogReadMilliVolts(VOLTAGE_PIN) * 1.5625 / 1000.0;
 
   // Welcome message
+  display.setRotation(2);
   display.clearDisplay();
   display.setTextColor(WHITE);
   display.setTextSize(2);
-  display.setCursor(20, 25);
+  display.setCursor(20, 10);
   display.println("BastlBot");
+  display.setTextSize(1);
+  display.setCursor(40, 30);
+  display.println("(Stepper)");
   display.setTextSize(1);
   display.setCursor(10, 55);
   display.println("Bat. voltage: " + String(voltageValue) + "V");
