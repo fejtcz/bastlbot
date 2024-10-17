@@ -11,6 +11,12 @@
 #define PIN_SDA 21
 #define PIN_SCL 22
 #define PIN_BUZZER 27
+#define PIN_FRONT_LED 32
+#define PIN_REAR_LED 33
+
+// PWM definitions
+const int PWM_FREQ = 500; // Recall that Arduino Uno is ~490 Hz. Official ESP32 example uses 5,000Hz
+const int PWM_RESOLUTION = 8;
 
 // OLED display definitions
 #define OLED_ADDRESS 0x3C
@@ -58,6 +64,37 @@ void printMessage(String message)
 void beep(int frequency, int duration)
 {
   tone(PIN_BUZZER, frequency, duration);
+}
+
+/*
+ * Set the LED brightness
+ * @param channel - PWM channel
+ * @param dutyCycle - duty cycle
+ */
+void setLEDBrightness(int channel, int dutyCycle)
+{
+  ledcWrite(channel, dutyCycle);
+}
+
+/*
+ * Blink the LED with fade effect
+ * @param channel - PWM channel
+ * @param delayTime - delay time
+ * @param maxDutyCycle - maximum duty cycle
+ */
+void blinkLED(int channel, int delayTime, int maxDutyCycle)
+{
+  for (int dutyCycle = 0; dutyCycle <= maxDutyCycle; dutyCycle++)
+  {
+    setLEDBrightness(channel, dutyCycle);
+    delay(delayTime);
+  }
+
+  for (int dutyCycle = maxDutyCycle; dutyCycle >= 0; dutyCycle--)
+  {
+    setLEDBrightness(channel, dutyCycle);
+    delay(delayTime);
+  }
 }
 
 /*
@@ -181,6 +218,10 @@ void runInstructions(String instructions)
 {
   printMessage("Running instructions: " + String(instructions));
 
+  // Turn on the both LEDs
+  setLEDBrightness(0, 255);
+  setLEDBrightness(1, 80); // Lower brightness for the rear LED
+
   // Convert the instruction string to an array of characters
   int length = instructions.length();
   char instructionsArray[length + 1];
@@ -207,6 +248,12 @@ void runInstructions(String instructions)
       break;
     }
   }
+
+  // Turn off the front LEDs
+  setLEDBrightness(0, 0);
+  // Full on the rear LED
+  setLEDBrightness(1, 255);
+  delay(2000);
 }
 
 /*
@@ -296,6 +343,12 @@ void setup()
   printMessage("***** BastlBot *****");
   printMessage("BastlBot is starting...");
 
+  // LED initialization
+  ledcSetup(0, PWM_FREQ, PWM_RESOLUTION);
+  ledcSetup(1, PWM_FREQ, PWM_RESOLUTION);
+  ledcAttachPin(PIN_REAR_LED, 1);
+  ledcAttachPin(PIN_FRONT_LED, 0);
+
   // OLED initialization and check
   if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS))
   {
@@ -344,6 +397,8 @@ void setup()
   Serial.println("HTTP server started");
 
   playStartupSound();
+  // Turn on the rear LED
+  setLEDBrightness(1, 255);
 }
 
 /*
@@ -351,5 +406,7 @@ void setup()
  */
 void loop()
 {
+  // Blink the front LED
+  blinkLED(0, 5, 255);
   webserver.handleClient();
 }
