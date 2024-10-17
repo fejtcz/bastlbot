@@ -21,12 +21,12 @@ Adafruit_SSD1306 display(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET);
 
 // Motor Shield and motors definitions
 #define MOTOR_SHIELD_ADDRESS 0x40
-#define FORWARD_MOVE_SPEED 100
-#define FORWARD_MOVE_DELAY 500
-#define BACKWARD_MOVE_SPEED 100
-#define BACKWARD_MOVE_DELAY 500
-#define TURN_SPEED 100
-#define TURN_DELAY 500
+const int FORWARD_MOVE_SPEED = 80;
+const int FORWARD_MOVE_DELAY = 1100;
+const int BACKWARD_MOVE_SPEED = 80;
+const int BACKWARD_MOVE_DELAY = 1100;
+const int TURN_SPEED = 180;
+const int TURN_DELAY = 510;
 Adafruit_MotorShield motorShield = Adafruit_MotorShield(MOTOR_SHIELD_ADDRESS);
 Adafruit_DCMotor *motor1 = motorShield.getMotor(1);
 Adafruit_DCMotor *motor2 = motorShield.getMotor(2);
@@ -111,9 +111,9 @@ void turnLeft()
   motor2->run(BACKWARD);
   motor2->setSpeed(TURN_SPEED);
   motor3->run(FORWARD);
-  motor3->setSpeed(TURN_SPEED);
+  motor3->setSpeed(TURN_SPEED - 50);
   motor4->run(BACKWARD);
-  motor4->setSpeed(TURN_SPEED);
+  motor4->setSpeed(TURN_SPEED - 50);
 }
 
 // Right turn
@@ -124,9 +124,9 @@ void turnRight()
   motor2->run(FORWARD);
   motor2->setSpeed(TURN_SPEED);
   motor3->run(BACKWARD);
-  motor3->setSpeed(TURN_SPEED);
+  motor3->setSpeed(TURN_SPEED - 50);
   motor4->run(FORWARD);
-  motor4->setSpeed(TURN_SPEED);
+  motor4->setSpeed(TURN_SPEED - 50);
 }
 
 // Stop
