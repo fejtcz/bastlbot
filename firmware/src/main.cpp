@@ -302,7 +302,7 @@ void webserverHomepage()
   content += "</tr>";
   content += "<tr>";
   content += "<td colspan=\"3\">";
-  content += "<button class=\"green\" onclick=\"runInstructions()\">RUN</button>";
+  content += "<button class=\"green\" onclick=\"runInstructions()\"></button>";
   content += "</td>";
   content += "</tr>";
   content += "</table>";
