@@ -28,11 +28,11 @@ Adafruit_SSD1306 display(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET);
 // Motor Shield and motors definitions
 #define MOTOR_SHIELD_ADDRESS 0x40
 const int FORWARD_MOVE_SPEED = 80;
-const int FORWARD_MOVE_DELAY = 1100;
+const int FORWARD_MOVE_DELAY = 1150;
 const int BACKWARD_MOVE_SPEED = 80;
-const int BACKWARD_MOVE_DELAY = 1100;
-const int TURN_SPEED = 180;
-const int TURN_DELAY = 510;
+const int BACKWARD_MOVE_DELAY = 1150;
+const int TURN_SPEED = 150;
+const int TURN_DELAY = 800;
 Adafruit_MotorShield motorShield = Adafruit_MotorShield(MOTOR_SHIELD_ADDRESS);
 Adafruit_DCMotor *motor1 = motorShield.getMotor(1);
 Adafruit_DCMotor *motor2 = motorShield.getMotor(2);
