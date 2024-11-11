@@ -11,8 +11,8 @@
 #define PIN_SDA 21
 #define PIN_SCL 22
 #define PIN_BUZZER 27
-#define PIN_FRONT_LED 32
-#define PIN_REAR_LED 33
+#define PIN_FRONT_LED 25
+#define PIN_REAR_LED 26
 
 // PWM definitions
 const int PWM_FREQ = 500; // Recall that Arduino Uno is ~490 Hz. Official ESP32 example uses 5,000Hz
