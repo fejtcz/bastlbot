@@ -270,7 +270,8 @@ void webserverHomepage()
   content += "body {background-color: #f0f0f0;font-family: Arial, sans-serif;text-align: center;}";
   content += "input {width: 80%;height: 50px;font-size: 2em;font-weight: bold;margin: 20px;text-align: center;}";
   content += "table {margin: 20 auto;width: 50%;text-align: center;}";
-  content += " table button {width: 100px;height: 100px;margin: 10px;font-size: 2em;}";
+  content += "table button {width: 100px;height: 100px;margin: 10px;font-size: 2em;}";
+  content += "table button.middleone {width: 200px;}";
   content += "table button.red {background-color: red;color: white;}";
   content += "table button.green {background-color: green;color: white;}";
   content += "</style>";
@@ -302,7 +303,7 @@ void webserverHomepage()
   content += "</tr>";
   content += "<tr>";
   content += "<td colspan=\"3\">";
-  content += "<button class=\"green\" onclick=\"runInstructions()\"></button>";
+  content += "<button class=\"middleone green\" onclick=\"runInstructions()\">GO</button>";
   content += "</td>";
   content += "</tr>";
   content += "</table>";
