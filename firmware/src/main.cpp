@@ -13,6 +13,8 @@
 #define PIN_BUZZER 27
 #define PIN_FRONT_LED 25
 #define PIN_REAR_LED 26
+#define PIN_TRACE_LEFT 32
+#define PIN_TRACE_RIGHT 33
 
 // PWM definitions
 const int PWM_FREQ = 500; // Recall that Arduino Uno is ~490 Hz. Official ESP32 example uses 5,000Hz
@@ -46,6 +48,10 @@ IPAddress local_ip(10, 0, 0, 1);
 IPAddress gateway(10, 0, 0, 1);
 IPAddress subnet(255, 255, 255, 0);
 WebServer webserver(80); // Webserver on port 80
+
+// Variable for line following
+bool traceLine = false;
+const int TRACE_TRASHOLD = 1000;
 
 /*
  * Print message to Serial
@@ -265,13 +271,14 @@ void webserverHomepage()
   content += "<head>";
   content += "<meta charset=\"UTF-8\">";
   content += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
-  content += "<title>BastlBot</title>";
+  content += "<title>BastlBot - Stepper</title>";
   content += "<style type=\"text/css\">";
   content += "body {background-color: #f0f0f0;font-family: Arial, sans-serif;text-align: center;}";
   content += "input {width: 80%;height: 50px;font-size: 2em;font-weight: bold;margin: 20px;text-align: center;}";
   content += "table {margin: 20 auto;width: 50%;text-align: center;}";
   content += "table button {width: 100px;height: 100px;margin: 10px;font-size: 2em;}";
   content += "table button.middleone {width: 200px;}";
+  content += "table button.bigone {width: 100%;}";
   content += "table button.red {background-color: red;color: white;}";
   content += "table button.green {background-color: green;color: white;}";
   content += "</style>";
@@ -284,6 +291,7 @@ void webserverHomepage()
   content += "</head>";
   content += "<body>";
   content += "<h1>BastlBot</h1>";
+  content += "<h2>Stepper</h2>";
   content += "<input type=\"text\" name=\"input\" disabled>";
   content += "<table>";
   content += "<tr>";
@@ -306,10 +314,63 @@ void webserverHomepage()
   content += "<button class=\"middleone green\" onclick=\"runInstructions()\">GO</button>";
   content += "</td>";
   content += "</tr>";
+  content += "<tr>";
+  content += "<td colspan=\"3\">";
+  content += "<button class=\"bigone\" onclick=\"window.location.href = '/traceline'\">TRACE LINE</button>";
+  content += "</td>";
+  content += "</tr>";
   content += "</table>";
   content += "</body>";
   content += "</html>";
   webserver.send(200, "text/html", content);
+}
+
+/*
+ * Webserver Trace Line
+ */
+void webserverTraceline()
+{
+  traceLine = true;
+
+  String content = "<html>";
+  content += "<head>";
+  content += "<meta charset=\"UTF-8\">";
+  content += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
+  content += "<title>BastlBot - Trace Line</title>";
+  content += "<style type=\"text/css\">";
+  content += "body {background-color: #f0f0f0;font-family: Arial, sans-serif;text-align: center;}";
+  content += "table {margin: 20 auto;width: 50%;text-align: center;}";
+  content += "table button {width: 100px;height: 100px;margin: 10px;font-size: 2em;}";
+  content += "table button.middleone {width: 200px;}";
+  content += "table button.bigone {width: 100%;}";
+  content += "table button.red {background-color: red;color: white;}";
+  content += "table button.green {background-color: green;color: white;}";
+  content += "</style>";
+  content += "</head>";
+  content += "<body>";
+  content += "<h1>BastlBot</h1>";
+  content += "<h2>Trace Line</h2>";
+  content += "<table>";
+  content += "<tr>";
+  content += "<td colspan=\"3\">";
+  content += "<button class=\"bigone red\" onclick=\"window.location.href = '/stop'\">STOP</button>";
+  content += "</td>";
+  content += "</tr>";
+  content += "</table>";
+  content += "</body>";
+  content += "</html>";
+  webserver.send(200, "text/html", content);
+}
+
+/*
+ * Webserver Stop
+ */
+void webserverStop()
+{
+  traceLine = false;
+  stopMove();
+  webserver.sendHeader("Location", "/");
+  webserver.send(303);
 }
 
 /*
@@ -357,6 +418,10 @@ void setup()
     return;
   }
 
+  // Initialize the Trace line pins
+  pinMode(PIN_TRACE_LEFT, INPUT);
+  pinMode(PIN_TRACE_RIGHT, INPUT);
+
   // Motor shield initialization
   if (!motorShield.begin())
   {
@@ -373,8 +438,6 @@ void setup()
   display.setCursor(20, 10);
   display.println("BastlBot");
   display.setTextSize(1);
-  display.setCursor(40, 30);
-  display.println("(Stepper)");
   display.setCursor(10, 45);
   display.println("IP: 10.0.0.1");
   display.setTextSize(1);
@@ -391,14 +454,19 @@ void setup()
   // Webserver route definitions
   webserver.on("/", webserverHomepage);
   webserver.on("/run", webserverRun);
+  webserver.on("/traceline", webserverTraceline);
+  webserver.on("/stop", webserverStop);
   webserver.onNotFound(webserverNotFound);
 
   // Webserver start
   webserver.begin();
   Serial.println("HTTP server started");
 
+  // Play startup sound
   playStartupSound();
-  // Turn on the rear LED
+
+  // Turn on the front and rear LED
+  setLEDBrightness(0, 255);
   setLEDBrightness(1, 255);
 }
 
@@ -407,7 +475,33 @@ void setup()
  */
 void loop()
 {
-  // Blink the front LED
-  blinkLED(0, 5, 255);
+  if (traceLine)
+  {
+    // Get the trace sensor values
+    int traceLeft = analogRead(PIN_TRACE_LEFT);
+    int traceRight = analogRead(PIN_TRACE_RIGHT);
+
+    // Print the trace sensor values
+    printMessage("Trace left: " + String(traceLeft) + ", Trace right: " + String(traceRight));
+
+    // Line following logic
+    if (traceLeft > TRACE_TRASHOLD && traceRight > TRACE_TRASHOLD)
+    {
+      stopMove();
+    }
+    else if (traceLeft > TRACE_TRASHOLD)
+    {
+      turnRight();
+    }
+    else if (traceRight > TRACE_TRASHOLD)
+    {
+      turnLeft();
+    }
+    else
+    {
+      moveForward();
+    }
+  }
+
   webserver.handleClient();
 }
