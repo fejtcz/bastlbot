@@ -1,18 +1,52 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
+// PIN's definitions
+#define PIN_BUZZER 27
 
-void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+/*
+ * Print message to Serial
+ * @param message - message to be printed
+ */
+void printMessage(String message)
+{
+  Serial.println(message);
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
+/*
+ * Beep by the intergrated buzzer
+ * @param frequency - frequency of the beep
+ * @param duration - duration of the beep
+ */
+void beep(int frequency, int duration)
+{
+  tone(PIN_BUZZER, frequency, duration);
 }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+/*
+ * Startup sound
+ */
+void playStartupSound()
+{
+  beep(1000, 150);
+  delay(50);
+  beep(2000, 150);
+  delay(50);
+  beep(3000, 150);
+  delay(50);
+  beep(2000, 350);
+}
+
+void setup()
+{
+  // Serial output init
+  Serial.begin(115200);
+  printMessage("***** BastlBot *****");
+  printMessage("BastlBot starting...");
+
+  // Play startup sound
+  playStartupSound();
+}
+
+void loop()
+{
 }
