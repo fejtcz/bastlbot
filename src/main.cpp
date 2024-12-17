@@ -18,12 +18,12 @@ Adafruit_SSD1306 display(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET);
 
 // Motor shield and motors definitions
 #define MOTOR_SHIELD_ADDRESS 0x40
-const int FORWARD_MOVE_SPEED = 50;
-const int FORWARD_MOVE_DELAY = 6000;
-const int BACKWARD_MOVE_SPEED = 50;
-const int BACKWARD_MOVE_DELAY = 6000;
-const int TURN_SPEED = 150;
-const int TURN_DELAY = 800;
+const int FORWARD_MOVE_SPEED = 100;
+const int FORWARD_MOVE_DELAY = 1000;
+const int BACKWARD_MOVE_SPEED = 100;
+const int BACKWARD_MOVE_DELAY = 1100;
+const int TURN_SPEED = 90;
+const int TURN_DELAY = 1000;
 const int PWM_FREQ = 500; // Recall that Arduino Uno is ~490 Hz. Official ESP32 example uses 5,000Hz
 const int PWM_RESOLUTION = 8;
 Adafruit_MotorShield motorShield = Adafruit_MotorShield(MOTOR_SHIELD_ADDRESS);
@@ -168,6 +168,12 @@ void playStartupSound()
 /*
  * Display messages
  */
+// Clear display
+void displayClear()
+{
+  display.clearDisplay();
+  display.display();
+}
 // Startup message
 void displayStartupMessage()
 {
@@ -279,6 +285,8 @@ void runInstructions(String instructions)
     default:
       break;
     }
+    displayClear();
+    delay(500);
   }
 }
 
